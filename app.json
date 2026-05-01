@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "AiHazardShield",
+    "slug": "aihazardshield",
+    "owner": "badih1",
+    "icon": "./assets/images/aihazardshield-icon.png",
+    "android": {
+      "package": "com.anonymous.firedetection",
+      "googleServicesFile": "./google-services.json",
+      "usesCleartextTraffic": true,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.VIBRATE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/aihazardshield-adaptive-foreground.png",
+        "backgroundImage": "./assets/images/aihazardshield-adaptive-background.png",
+        "backgroundColor": "#020617"
+      }
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      [
+        "expo-notifications",
+        {
+          "color": "#c0443a",
+          "defaultChannel": "fire-alerts"
+        }
+      ],
+      "expo-audio"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.anonymous.firedetection",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "910a2e92-43b4-4fc9-8745-ca7376df81c7"
+      }
+    }
+  }
+}
