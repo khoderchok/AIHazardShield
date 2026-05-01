@@ -1,0 +1,12 @@
+.expo/
+node_modules
+__pycache__/
+*.pyc
+*.class
+tempCodeRunnerFile.js
+.venv/
+android/build/
+android/app/build/
+fire_detection_key.json
+google-services.json
+android/app/google-services.json

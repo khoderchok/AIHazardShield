@@ -1,0 +1,38 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "device": {
+      "push_token": {
+        ".read": false,
+        ".write": true,
+        ".validate": "newData.isString() && newData.val().matches(/^ExponentPushToken\\[[A-Za-z0-9_-]+\\]$/)"
+      },
+      "token_updated_at": {
+        ".read": false,
+        ".write": true,
+        ".validate": "newData.isNumber()"
+      },
+      "$other": {
+        ".read": false,
+        ".write": false
+      }
+    },
+    "fire_detection": {
+      ".read": true,
+      ".write": false
+    },
+    "history": {
+      ".read": true,
+      ".write": false
+    },
+    "sensors": {
+      ".read": true,
+      ".write": false
+    },
+    "alerts": {
+      ".read": true,
+      ".write": false
+    }
+  }
+}

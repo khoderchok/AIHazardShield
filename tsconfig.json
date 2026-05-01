@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {},
+  "extends": "expo/tsconfig.base",
+  "exclude": [
+    "node_modules",
+    "android",
+    ".venv",
+    "__pycache__",
+    "tempCodeRunnerFile.js"
+  ]
+}
