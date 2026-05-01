@@ -159,7 +159,7 @@ function FireParticle({ particle, spark }) {
   );
 }
 
-// Login screen that protects the FireWatch dashboard.
+// Login screen that protects the AiHazardShield dashboard.
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
 });
 
 // File summary:
-// LoginScreen renders the FireWatch authentication entry screen.
+// LoginScreen renders the AiHazardShield authentication entry screen.
 // It handles Firebase email login, account registration, and password reset.
 // It includes the animated orb logo and all styling for the mobile login form.
 // App.js shows this screen whenever Firebase reports that no user is signed in.

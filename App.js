@@ -1,13 +1,13 @@
-﻿// App.js  — FireWatch complete entry point
-// ─────────────────────────────────────────────────────────────────────────────
+// App.js  � AiHazardShield complete entry point
+// -----------------------------------------------------------------------------
 // Covers:
-//   • Notification channel setup + push token registration on mount
-//   • Local notifications triggered by Firebase /alerts listener (foreground + background)
-//   • Push notifications sent by Python backend (background + killed)
-//   • Navigate-to-screen on notification tap
-//   • 30-second dedup 3444444444444window to prevent spam
-//   • Full LiveScreen + HistoryScreen implementations
-// ─────────────────────────────────────────────────────────────────────────────
+//   � Notification channel setup + push token registration on mount
+//   � Local notifications triggered by Firebase /alerts listener (foreground + background)
+//   � Push notifications sent by Python backend (background + killed)
+//   � Navigate-to-screen on notification tap
+//   � 30-second dedup 3444444444444window to prevent spam
+//   � Full LiveScreen + HistoryScreen implementations
+// -----------------------------------------------------------------------------
 import React, {
   useState, useRef, useEffect, useCallback,
 } from "react";
@@ -28,9 +28,9 @@ import { setupNotificationChannels } from "./Notificationsetup";
 import { registerPushToken }  from "./Pushtoken";
 import LoginScreen            from "./LoginScreen";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const { width }       = Dimensions.get("window");
 const ESP32_IP        = "10.1.1.110";
 const DEDUP_MS        = 30_000;   // same alert type won't re-notify within 30 s
@@ -80,9 +80,9 @@ const getModeColors = (mode) => {
   return { accent: C.sage, accent2: C.sageMid, bg: C.glassWhite, border: C.glassBorder, glow: C.glowSage };
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // DESIGN TOKENS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const C = {
   bgDeep:       "#050607",
   bgMid:        "#111315",
@@ -121,12 +121,12 @@ const C = {
   glowAmber:    "rgba(255,255,255,0.08)",
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // ALERT CONFIGS  (shared by banner + local notifications)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const ALERT_CONFIGS = {
   "FIRE+GAS": {
-    emoji:   "🚨",
+    emoji:   "??",
     text:    "CRITICAL ALERT",
     subtext: "FIRE + GAS DETECTED",
     bg:      C.fireDark,
@@ -135,7 +135,7 @@ const ALERT_CONFIGS = {
     vibrate: [0, 500, 150, 500, 150, 500],
   },
   "FIRE": {
-    emoji:   "🔥",
+    emoji:   "??",
     text:    "FIRE DETECTED",
     subtext: "TAKE IMMEDIATE ACTION",
     bg:      C.fireDim,
@@ -144,7 +144,7 @@ const ALERT_CONFIGS = {
     vibrate: [0, 500, 200, 500],
   },
   "GAS": {
-    emoji:   "⚠️",
+    emoji:   "??",
     text:    "GAS LEAK DETECTED",
     subtext: "VENTILATE AREA IMMEDIATELY",
     bg:      C.gasDim,
@@ -153,7 +153,7 @@ const ALERT_CONFIGS = {
     vibrate: [0, 300, 300, 300],
   },
   "false Detection": {
-    emoji:   "⚠️",
+    emoji:   "??",
     text:    "FALSE DETECTION",
     bg:      C.tealDim,
     border:  C.tealBorder,
@@ -165,7 +165,7 @@ const ALERT_CONFIGS = {
 // Per-alert local notification payload
 const LOCAL_NOTIF_CONFIGS = {
   "FIRE+GAS": {
-    title:           "🔥💨 FIRE + GAS ALERT",
+    title:           "???? FIRE + GAS ALERT",
     body:            "Fire AND gas detected simultaneously! Evacuate immediately.",
     channelId:       "fire-alerts",
     color:           "#c0443a",
@@ -175,7 +175,7 @@ const LOCAL_NOTIF_CONFIGS = {
     badge:           1,
   },
   "FIRE": {
-    title:           "🔥 FIRE ALERT",
+    title:           "?? FIRE ALERT",
     body:            "Fire detected by AI camera. Act now.",
     channelId:       "fire-alerts",
     color:           "#c0443a",
@@ -185,7 +185,7 @@ const LOCAL_NOTIF_CONFIGS = {
     badge:           1,
   },
   "GAS": {
-    title:           "💨 GAS LEAK ALERT",
+    title:           "?? GAS LEAK ALERT",
     body:            "Gas leak detected. Ventilate area immediately.",
     channelId:       "fire-alerts",
     color:           "#bfc2c4",
@@ -195,7 +195,7 @@ const LOCAL_NOTIF_CONFIGS = {
     badge:           1,
   },
   "false Detection": {
-    title:           "⚠️ False Detection",
+    title:           "?? False Detection",
     body:            "Potential fire detected but cleared within 2 seconds.",
     channelId:       "false-detections",
     color:           "#4db8b0",
@@ -240,9 +240,9 @@ async function scheduleLocalNotification(alertType, trigger = null) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // MJPEG WEBVIEW HTML
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Creates the WebView HTML used to stream the ESP32 camera feed.
 const getMjpegHtml = (ip) => {
   const streamUrl = `http://${ip}:81/stream`;
@@ -261,8 +261,8 @@ img{width:100%;height:100%;object-fit:contain;display:block}
 </head>
 <body>
 <img id="stream"/>
-<div id="error">⚠ Stream unavailable<br/>Check ESP32 IP &amp; WiFi</div>
-<div id="retry-msg">Retrying…</div>
+<div id="error">? Stream unavailable<br/>Check ESP32 IP &amp; WiFi</div>
+<div id="retry-msg">Retrying�</div>
 <script>
 const img=document.getElementById('stream');
 const err=document.getElementById('error');
@@ -376,9 +376,9 @@ const CameraStreamView = React.memo(function CameraStreamView({
   );
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // SHARED UI COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Shared glass card wrapper used by dashboard panels.
 const GlassCard = ({ children, style }) => (
   <Animated.View style={[styles.glassCard, style]}>{children}</Animated.View>
@@ -467,9 +467,9 @@ const HazardOverlay = ({ mode, pulseAnim, flashAnim }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // ALERT BANNER
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Shows the animated alert banner and controls alert vibration.
 const AlertBanner = ({ alertType }) => {
   const config     = ALERT_CONFIGS[alertType];
@@ -557,9 +557,9 @@ const AlertBanner = ({ alertType }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // HISTORY SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const CHART_W = width - 32;
 
 const chartBase = {
@@ -606,13 +606,13 @@ function HistoryScreen() {
   if (loading) return (
     <View style={hStyles.center}>
       <ActivityIndicator size="large" color={C.sage} />
-      <Text style={hStyles.loadingText}>Loading history…</Text>
+      <Text style={hStyles.loadingText}>Loading history�</Text>
     </View>
   );
 
   if (noData) return (
     <View style={hStyles.center}>
-      <Text style={{ fontSize: 36 }}>📊</Text>
+      <Text style={{ fontSize: 36 }}>??</Text>
       <Text style={hStyles.noDataTitle}>No history yet</Text>
       <Text style={hStyles.noDataSub}>
         Data will appear once ESP32 starts pushing records.
@@ -640,32 +640,32 @@ function HistoryScreen() {
       contentContainerStyle={hStyles.scroll}
       showsVerticalScrollIndicator={false}
     >
-      {/* ── Summary chips ── */}
+      {/* -- Summary chips -- */}
       <View style={hStyles.chips}>
         <View style={[hStyles.chip, { borderColor: C.danger + "55" }]}>
-          <Text style={hStyles.chipIcon}>🌡️</Text>
-          <Text style={[hStyles.chipVal, { color: C.danger }]}>{latestTemp}°C</Text>
+          <Text style={hStyles.chipIcon}>???</Text>
+          <Text style={[hStyles.chipVal, { color: C.danger }]}>{latestTemp}�C</Text>
           <Text style={hStyles.chipLbl}>Now</Text>
         </View>
         <View style={[hStyles.chip, { borderColor: C.amber + "55" }]}>
-          <Text style={hStyles.chipIcon}>💨</Text>
+          <Text style={hStyles.chipIcon}>??</Text>
           <Text style={[hStyles.chipVal, { color: C.amber }]}>{latestGas}</Text>
           <Text style={hStyles.chipLbl}>Gas ppm</Text>
         </View>
         <View style={[hStyles.chip, { borderColor: C.sage + "55" }]}>
-          <Text style={hStyles.chipIcon}>🔥</Text>
+          <Text style={hStyles.chipIcon}>??</Text>
           <Text style={[hStyles.chipVal, { color: C.sage }]}>{latestProb}%</Text>
           <Text style={hStyles.chipLbl}>Fire Prob</Text>
         </View>
       </View>
 
-      {/* ── Temperature chart ── */}
+      {/* -- Temperature chart -- */}
       <View style={hStyles.chartCard}>
         <View style={hStyles.chartHeader}>
-          <Text style={hStyles.chartTitle}>🌡️  Temperature</Text>
+          <Text style={hStyles.chartTitle}>???  Temperature</Text>
           <View style={hStyles.chartBadge}>
             <Text style={[hStyles.chartBadgeText, { color: C.danger }]}>
-              Max {maxTemp.toFixed(1)}°C
+              Max {maxTemp.toFixed(1)}�C
             </Text>
           </View>
         </View>
@@ -683,13 +683,13 @@ function HistoryScreen() {
           withShadow={false}
           style={hStyles.chart}
         />
-        <Text style={hStyles.chartUnit}>°C — last {history.length} records</Text>
+        <Text style={hStyles.chartUnit}>�C � last {history.length} records</Text>
       </View>
 
-      {/* ── Gas chart ── */}
+      {/* -- Gas chart -- */}
       <View style={hStyles.chartCard}>
         <View style={hStyles.chartHeader}>
-          <Text style={hStyles.chartTitle}>💨  Gas Level</Text>
+          <Text style={hStyles.chartTitle}>??  Gas Level</Text>
           <View style={hStyles.chartBadge}>
             <Text style={[hStyles.chartBadgeText, { color: C.amber }]}>
               Max {maxGas} ppm
@@ -710,13 +710,13 @@ function HistoryScreen() {
           withShadow={false}
           style={hStyles.chart}
         />
-        <Text style={hStyles.chartUnit}>ppm — danger threshold: 200</Text>
+        <Text style={hStyles.chartUnit}>ppm � danger threshold: 200</Text>
       </View>
 
-      {/* ── Fire probability chart ── */}
+      {/* -- Fire probability chart -- */}
       <View style={hStyles.chartCard}>
         <View style={hStyles.chartHeader}>
-          <Text style={hStyles.chartTitle}>🔥  Fire Probability</Text>
+          <Text style={hStyles.chartTitle}>??  Fire Probability</Text>
           <View style={hStyles.chartBadge}>
             <Text style={[hStyles.chartBadgeText, { color: C.sage }]}>
               Max {maxProb.toFixed(1)}%
@@ -737,19 +737,19 @@ function HistoryScreen() {
           withShadow={false}
           style={hStyles.chart}
         />
-        <Text style={hStyles.chartUnit}>% — danger threshold: 60%</Text>
+        <Text style={hStyles.chartUnit}>% � danger threshold: 60%</Text>
       </View>
 
       <Text style={hStyles.footer}>
-        Showing last {history.length} of {MAX_HISTORY_PTS} max records · auto-updates
+        Showing last {history.length} of {MAX_HISTORY_PTS} max records � auto-updates
       </Text>
     </ScrollView>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // LIVE SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Main live dashboard for camera, sensors, alerts, and stream controls.
 function LiveScreen() {
   const [isStreaming,      setIsStreaming]      = useState(false);
@@ -811,7 +811,7 @@ function LiveScreen() {
     }).start();
   }, [probability]);
 
-  // ── Firebase: fire detection data ───────────────────────────────
+  // -- Firebase: fire detection data -------------------------------
   useEffect(() => {
     const fireRef = ref(db, "/fire_detection");
     const unsub = onValue(
@@ -837,7 +837,7 @@ function LiveScreen() {
     return () => unsub();
   }, []);
 
-  // ── Firebase: Python backend heartbeat from main.py ─────────────
+  // -- Firebase: Python backend heartbeat from main.py -------------
   useEffect(() => {
     const statusRef = ref(db, "/backend_status");
     const refreshStatus = (lastSeen, running = true) => {
@@ -872,7 +872,7 @@ function LiveScreen() {
     };
   }, []);
 
-  // ── Firebase: sensor data ────────────────────────────────────────
+  // -- Firebase: sensor data ----------------------------------------
   useEffect(() => {
     const unsub = onValue(ref(db, "/sensors"), (snap) => {
       const data = snap.val();
@@ -885,7 +885,7 @@ function LiveScreen() {
     return () => unsub();
   }, []);
 
-  // ── Firebase: alert state ────────────────────────────────────────
+  // -- Firebase: alert state ----------------------------------------
   useEffect(() => {
     const unsub = onValue(ref(db, "/alerts"), (snap) => {
       const data = snap.val();
@@ -942,7 +942,7 @@ function LiveScreen() {
   const gasDanger        = hazardMode === "gas" || hazardMode === "critical";
   const backendActive   = backendConnected === true;
   const backendSublabel =
-    backendConnected === null ? "Checking…" :
+    backendConnected === null ? "Checking�" :
     backendConnected          ? "Connected" : "Offline";
   const activeAlert     = alertActive && alertType !== "NONE" ? alertType : null;
 
@@ -994,15 +994,15 @@ function LiveScreen() {
       <View style={styles.glowTopLeft}     pointerEvents="none" />
       <View style={styles.glowBottomRight} pointerEvents="none" />
 
-      {/* ── Header ── */}
+      {/* -- Header -- */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={[styles.logoBox, hazardMode !== "normal" && { borderColor: modeColors.border, shadowColor: modeColors.accent }]}>
-            <Text style={styles.logoEmoji}>🔥</Text>
+            <Text style={styles.logoEmoji}>??</Text>
           </View>
           <View>
-            <Text style={styles.headerTitle}>FireWatch</Text>
-            <Text style={styles.headerSub}>AI · Hazard Shield · 24 MHz</Text>
+            <Text style={styles.headerTitle}>AiHazardShield</Text>
+            <Text style={styles.headerSub}>AI � Hazard Shield � 24 MHz</Text>
           </View>
         </View>
         <View style={[
@@ -1024,10 +1024,10 @@ function LiveScreen() {
         </View>
       </View>
 
-      {/* ── Alert banner ── */}
+      {/* -- Alert banner -- */}
       <AlertBanner alertType={activeAlert} />
 
-      {/* ── Camera viewport ── */}
+      {/* -- Camera viewport -- */}
       <View style={styles.viewport}>
         {!isStreaming ? (
           <View style={styles.placeholder}>
@@ -1042,7 +1042,7 @@ function LiveScreen() {
                 transform: [{ scale: hazardPulseAnim }],
               },
             ]}>
-              <Text style={{ fontSize: 32 }}>📷</Text>
+              <Text style={{ fontSize: 32 }}>??</Text>
             </Animated.View>
             <Text style={[styles.placeholderTitle, hazardMode !== "normal" && { color: modeColors.accent }]}>Camera Standby</Text>
             <Text style={[styles.placeholderSub, hazardMode !== "normal" && { color: modeColors.accent2 }]}>Tap Connect to start stream</Text>
@@ -1062,21 +1062,21 @@ function LiveScreen() {
         )}
       </View>
 
-      {/* ── Scrollable bottom section ── */}
+      {/* -- Scrollable bottom section -- */}
       <ScrollView
         contentContainerStyle={styles.bottom}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Sensor row ── */}
+        {/* -- Sensor row -- */}
         <View style={styles.sensorRow}>
           <SensorTile
-            icon="🌡️" label="Temperature"
-            value={temperature} unit="°C"
+            icon="???" label="Temperature"
+            value={temperature} unit="�C"
             color={tempColor} warn={tempWarn}
             pulseStyle={tempWarn ? dangerPulseStyle : null}
           />
           <SensorTile
-            icon="💨" label="Gas (MQ-2)"
+            icon="??" label="Gas (MQ-2)"
             value={gasLevel} unit=" ppm"
             color={gasDanger ? C.gas : gasColor} warn={gasWarn || gasDanger}
             pulseStyle={gasDanger ? dangerPulseStyle : null}
@@ -1092,7 +1092,7 @@ function LiveScreen() {
             hazardMode !== "normal" && dangerPulseStyle,
           ]}>
             <Text style={styles.alertChipEmoji}>
-              {activeAlert ? ALERT_CONFIGS[activeAlert]?.emoji : "🛡️"}
+              {activeAlert ? ALERT_CONFIGS[activeAlert]?.emoji : "???"}
             </Text>
             <Text style={[
               styles.alertChipText,
@@ -1103,7 +1103,7 @@ function LiveScreen() {
           </Animated.View>
         </View>
 
-        {/* ── Fire probability card ── */}
+        {/* -- Fire probability card -- */}
         <GlassCard style={[
           fireDanger && styles.probCardDanger,
           fireDanger && dangerPulseStyle,
@@ -1134,25 +1134,25 @@ function LiveScreen() {
           <View style={styles.probFooter}>
             <PillBadge label={fireDanger ? "DANGER" : detectionLabel} color={fireDanger ? C.fire : probColor} glow={fireDanger} />
             <Text style={styles.ts}>
-              {lastUpdated ? `Updated ${lastUpdated}` : "Waiting for data…"}
+              {lastUpdated ? `Updated ${lastUpdated}` : "Waiting for data�"}
             </Text>
           </View>
         </GlassCard>
 
-        {/* ── Bento status grid ── */}
+        {/* -- Bento status grid -- */}
         <View style={styles.bentoGrid}>
           <BentoTile
-            label="Camera" icon="📷"
+            label="Camera" icon="??"
             active={streamStatus} color={C.sage}
             sublabel={streamStatus ? "Streaming" : "Idle"}
           />
           <BentoTile
-            label="AI Backend" icon="🤖"
+            label="AI Backend" icon="??"
             active={backendActive} color={C.sage}
             sublabel={backendSublabel}
           />
           <BentoTile
-            label="Safety" icon="🛡️"
+            label="Safety" icon="???"
             active={!activeAlert || alertType === "false Detection"}
             color={activeAlert && alertType !== "false Detection" ? modeColors.accent : C.sage}
             danger={hazardMode === "critical"}
@@ -1182,7 +1182,7 @@ function LiveScreen() {
           </Animated.View>
         )}
 
-        {/* ── Connect / Stop buttons ── */}
+        {/* -- Connect / Stop buttons -- */}
         <View style={styles.btnRow}>
           <TouchableOpacity
             style={[styles.btn, isStreaming ? styles.btnStreaming : styles.btnConnect]}
@@ -1191,7 +1191,7 @@ function LiveScreen() {
             activeOpacity={0.8}
           >
             <Text style={[styles.btnText, { color: isStreaming ? C.sage : C.bgDeep }]}>
-              {isStreaming ? "● Streaming" : "Connect"}
+              {isStreaming ? "? Streaming" : "Connect"}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -1203,14 +1203,14 @@ function LiveScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Force reconnect ── */}
+        {/* -- Force reconnect -- */}
         {isStreaming && !streamStatus && (
           <TouchableOpacity
             style={styles.btnReconnect}
             onPress={() => { setIsLoadingStream(true); setWebviewKey((k) => k + 1); }}
             activeOpacity={0.8}
           >
-            <Text style={styles.btnReconnectText}>⟳  Force Reconnect</Text>
+            <Text style={styles.btnReconnectText}>?  Force Reconnect</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -1218,9 +1218,9 @@ function LiveScreen() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // SMART CONTROL SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Animated lamp control used by the Smart Control screen.
 const LampToggle = ({ isOn, onToggle }) => {
   const glow = useRef(new Animated.Value(isOn ? 1 : 0)).current;
@@ -1887,9 +1887,9 @@ const TabButton = ({ active, icon, label, hazardMode = "normal", onPress }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // ROOT APP
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Root component that connects notifications, alarm sound, and screen tabs.
 export default function App() {
   const [activeTab, setActiveTab] = useState("live");
@@ -1959,7 +1959,7 @@ export default function App() {
     });
   }, []);
 
-  // ── One-time setup on mount ─────────────────────────────────────
+  // -- One-time setup on mount -------------------------------------
   useEffect(() => {
     if (!user) return;
 
@@ -1968,7 +1968,7 @@ export default function App() {
       await registerPushToken();           // request permission + save token
     })();
 
-    // User tapped a notification → navigate to correct screen
+    // User tapped a notification ? navigate to correct screen
     responseListenerRef.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const data = response.notification.request.content.data ?? {};
@@ -1983,7 +1983,7 @@ export default function App() {
     notifListenerRef.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log(
-          "📬 Foreground notification:",
+          "?? Foreground notification:",
           notification.request.content.title
         );
       });
@@ -1994,7 +1994,7 @@ export default function App() {
     };
   }, [user, userRole]);
 
-  // ── Firebase /alerts listener → LOCAL notification ──────────────
+  // -- Firebase /alerts listener ? LOCAL notification --------------
   // This is the fallback for when the app is open or in background.
   // The Python backend sends push notifications for killed-app state.
   // Both sides have a 30-second dedup window to prevent duplicates.
@@ -2068,7 +2068,7 @@ export default function App() {
     return (
       <View style={styles.authLoading}>
         <ActivityIndicator size="large" color={C.fireHot} />
-        <Text style={styles.authLoadingText}>Loading FireWatch...</Text>
+        <Text style={styles.authLoadingText}>Loading AiHazardShield...</Text>
       </View>
     );
   }
@@ -2092,7 +2092,7 @@ export default function App() {
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
 
-      {/* ── Tab bar ── */}
+      {/* -- Tab bar -- */}
       <View style={[
         styles.tabBar,
         globalMode !== "normal" && {
@@ -2104,7 +2104,7 @@ export default function App() {
       ]}>
         <TabButton
           active={activeTab === "live"}
-          icon="📷"
+          icon="??"
           label="Live"
           hazardMode={globalMode}
           onPress={() => setActiveTab("live")}
@@ -2112,7 +2112,7 @@ export default function App() {
         {isAdmin && (
           <TabButton
             active={activeTab === "history"}
-            icon="📊"
+            icon="??"
             label="History"
             hazardMode={globalMode}
             onPress={() => setActiveTab("history")}
@@ -2121,7 +2121,7 @@ export default function App() {
         {isAdmin && (
           <TabButton
             active={activeTab === "control"}
-            icon="💡"
+            icon="??"
             label="Control"
             hazardMode={globalMode}
             onPress={() => setActiveTab("control")}
@@ -2132,9 +2132,9 @@ export default function App() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // STYLES
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 const hStyles = StyleSheet.create({
   scroll:        { padding: 16, paddingBottom: Platform.OS === "ios" ? 112 : 104, gap: 14 },
   center:        { flex: 1, justifyContent: "center", alignItems: "center", gap: 12, backgroundColor: "transparent" },
@@ -2331,7 +2331,7 @@ const styles = StyleSheet.create({
 });
 
 // File summary:
-// App.js is the main FireWatch mobile app entry point.
+// App.js is the main AiHazardShield mobile app entry point.
 // It checks Firebase Auth and shows LoginScreen until a user signs in.
 // It registers notification channels and the device Expo push token.
 // It listens to Firebase fire detection, sensor, alert, history, and backend status paths.

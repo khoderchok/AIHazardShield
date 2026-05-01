@@ -24,7 +24,7 @@
     "babel-preset-expo": "^55.0.18",
     "typescript": "~5.9.2"
   },
-  "name": "FireDetection",
+  "name": "aihazardshield",
   "version": "1.0.0",
   "scripts": {
     "android": "expo run:android",

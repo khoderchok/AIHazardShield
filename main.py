@@ -1,4 +1,4 @@
-# main.py  — FireWatch Python backend
+# main.py  — AiHazardShield Python backend
 # ─────────────────────────────────────────────────────────────────────────────
 # Covers:
 #   • YOLO fire detection from ESP32 MJPEG snapshot
@@ -466,7 +466,7 @@ def fetch_frame() -> np.ndarray:
 last_history_push  = 0.0
 last_firestore_log = 0.0
 
-print("🚀 FireWatch detection loop started")
+print("🚀 AiHazardShield detection loop started")
 
 # Continuously captures frames, detects fire, and updates Firebase.
 while True:
@@ -527,7 +527,7 @@ while True:
     time.sleep(MAIN_LOOP_SLEEP)
 
 # File summary:
-# main.py runs the production FireWatch Python backend.
+# main.py runs the production AiHazardShield Python backend.
 # It reads ESP32 camera frames and sensor values, runs YOLO fire detection, and updates Firebase.
 # It writes live status, history, Firestore SOS images, backend heartbeat data, and alert states.
 # It also sends Expo push notifications and cleans up invalid device tokens.

@@ -36,8 +36,8 @@ export async function registerPushToken() {
   if (finalStatus !== "granted") {
     Alert.alert(
       "Notifications Disabled",
-      "FireWatch needs notifications to alert you about fire and gas.\n\n" +
-        "Enable them in Settings > Apps > FireWatch > Notifications",
+      "AiHazardShield needs notifications to alert you about fire and gas.\n\n" +
+        "Enable them in Settings > Apps > AiHazardShield > Notifications",
       [{ text: "OK" }]
     );
     return null;
@@ -76,4 +76,4 @@ export async function registerPushToken() {
 // Pushtoken.js requests notification permission from the mobile device.
 // It asks Expo for this device's push token using the EAS project id.
 // It saves the token and update timestamp into Firebase Realtime Database.
-// The Python backend reads that saved token to send FireWatch alert pushes.
+// The Python backend reads that saved token to send AiHazardShield alert pushes.
