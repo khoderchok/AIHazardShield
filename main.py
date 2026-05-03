@@ -24,14 +24,14 @@ from firebase_admin import credentials, db, firestore
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
-ESP32_IP       = "10.1.1.110"
-SNAPSHOT_URL   = f"http://{ESP32_IP}/capture"
+DEFAULT_ESP32_IP = "10.1.1.110"
 EXPO_PUSH_URL  = "https://exp.host/--/api/v2/push/send"
 
 HISTORY_INTERVAL   = 10    # seconds between history pushes
 FIRESTORE_INTERVAL = 10    # seconds between Firestore image logs
 SENSOR_POLL_S      = 5     # seconds between sensor reads
 TOKEN_POLL_S       = 5     # seconds between push token reads
+SETTINGS_POLL_S    = 5     # seconds between ESP32 IP setting reads
 ALERT_POLL_S       = 0.5   # seconds between alert checks for push notifications
 DEDUP_WINDOW_S     = 5     # seconds before same alert type can fire again
 MAIN_LOOP_SLEEP    = 0.1   # seconds between detection cycles
@@ -53,6 +53,7 @@ ref_sensors = db.reference("/sensors")
 ref_alerts  = db.reference("/alerts")
 ref_device  = db.reference("/device")
 ref_backend_status = db.reference("/backend_status")
+ref_settings = db.reference("/settings")
 db_fs       = firestore.client()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -112,6 +113,9 @@ sensor_lock       = threading.Lock()
 push_token_cache  = {"token": None}
 token_lock        = threading.Lock()
 
+esp32_ip_cache    = {"ip": DEFAULT_ESP32_IP}
+esp32_ip_lock     = threading.Lock()
+
 # Dedup: tracks {alert_type: last_sent_timestamp}
 dedup_state       = {}
 dedup_lock        = threading.Lock()
@@ -146,6 +150,53 @@ def mark_backend_offline():
 atexit.register(mark_backend_offline)
 threading.Thread(target=backend_heartbeat_thread, daemon=True).start()
 print("Backend heartbeat started")
+
+def clean_esp32_ip(value) -> str:
+    return str(value or "").strip().replace("http://", "").replace("https://", "").split("/")[0]
+
+def is_valid_esp32_ip(value: str) -> bool:
+    parts = value.split(".")
+    if len(parts) != 4:
+        return False
+    try:
+        return all(part.isdigit() and 0 <= int(part) <= 255 for part in parts)
+    except ValueError:
+        return False
+
+def get_esp32_ip() -> str:
+    with esp32_ip_lock:
+        return esp32_ip_cache["ip"]
+
+def get_snapshot_url() -> str:
+    return f"http://{get_esp32_ip()}/capture"
+
+def refresh_esp32_ip_setting():
+    raw_ip = clean_esp32_ip(ref_settings.child("esp32Ip").get())
+    next_ip = raw_ip if is_valid_esp32_ip(raw_ip) else DEFAULT_ESP32_IP
+
+    if not raw_ip:
+        ref_settings.child("esp32Ip").set(DEFAULT_ESP32_IP)
+
+    with esp32_ip_lock:
+        if esp32_ip_cache["ip"] != next_ip:
+            esp32_ip_cache["ip"] = next_ip
+            print(f"ESP32 IP updated from Firebase: {next_ip}")
+
+def esp32_ip_settings_thread():
+    while True:
+        try:
+            refresh_esp32_ip_setting()
+        except Exception as e:
+            print(f"ESP32 IP setting error: {e}")
+        time.sleep(SETTINGS_POLL_S)
+
+try:
+    refresh_esp32_ip_setting()
+except Exception as e:
+    print(f"Initial ESP32 IP setting read error: {e}")
+
+threading.Thread(target=esp32_ip_settings_thread, daemon=True).start()
+print("ESP32 IP settings thread started")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DEDUP HELPERS
@@ -455,7 +506,7 @@ def write_firestore(frame: np.ndarray, fire_prob: float):
 # ─────────────────────────────────────────────────────────────────────────────
 # Downloads one camera frame from the ESP32 snapshot endpoint.
 def fetch_frame() -> np.ndarray:
-    response = requests.get(SNAPSHOT_URL, timeout=3)
+    response = requests.get(get_snapshot_url(), timeout=3)
     response.raise_for_status()
     img_array = np.frombuffer(response.content, np.uint8)
     return cv2.imdecode(img_array, cv2.IMREAD_COLOR)

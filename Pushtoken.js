@@ -8,9 +8,23 @@ import { db } from "./Firebaseconfig";
 // Firebase paths where the device push token is stored.
 const TOKEN_PATH = "/device/push_token";
 const UPDATED_AT_PATH = "/device/token_updated_at";
+const MAX_TOKEN_ATTEMPTS = 5;
+const RETRY_DELAYS_MS = [3000, 8000, 15000, 30000];
+
+let retryTimer = null;
+let isRegistering = false;
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function isNetworkTokenError(error) {
+  const message = String(error?.message ?? error ?? "");
+  return message.includes("Network request failed") || message.includes("fetching Expo token");
+}
 
 // Requests notification permission and saves this phone's Expo push token.
 export async function registerPushToken() {
+  if (isRegistering) return null;
+
   if (!Device.isDevice) {
     console.warn("Push notifications require a physical device.");
     return null;
@@ -43,6 +57,8 @@ export async function registerPushToken() {
     return null;
   }
 
+  isRegistering = true;
+
   try {
     // Expo needs the EAS project id to generate a push token.
     const projectId =
@@ -55,8 +71,24 @@ export async function registerPushToken() {
       );
     }
 
-    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-    const token = tokenData.data;
+    let token = null;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= MAX_TOKEN_ATTEMPTS; attempt += 1) {
+      try {
+        const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+        token = tokenData.data;
+        break;
+      } catch (e) {
+        lastError = e;
+        if (!isNetworkTokenError(e) || attempt === MAX_TOKEN_ATTEMPTS) {
+          throw e;
+        }
+        await wait(RETRY_DELAYS_MS[attempt - 1]);
+      }
+    }
+
+    if (!token) throw lastError ?? new Error("Expo push token unavailable");
 
     // Stores the token so the Python backend can send push alerts.
     await update(ref(db), {
@@ -68,7 +100,17 @@ export async function registerPushToken() {
     return token;
   } catch (e) {
     console.error("Failed to register push token:", e.message);
+
+    if (isNetworkTokenError(e) && !retryTimer) {
+      retryTimer = setTimeout(() => {
+        retryTimer = null;
+        registerPushToken();
+      }, 60000);
+    }
+
     return null;
+  } finally {
+    isRegistering = false;
   }
 }
 
