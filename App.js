@@ -14,7 +14,7 @@ import React, {
 import {
   View, Text, TouchableOpacity, StyleSheet, StatusBar,
   ActivityIndicator, Dimensions, Animated, ScrollView,
-  Platform, Vibration, Alert, TextInput,
+  Platform, Vibration, Alert, TextInput, Linking,
 } from "react-native";
 import { WebView }      from "react-native-webview";
 import { LineChart }    from "react-native-chart-kit";
@@ -37,6 +37,12 @@ const DEDUP_MS        = 30_000;   // same alert type won't re-notify within 30 s
 const MAX_HISTORY_PTS = 20;
 const BACKEND_STALE_MS = 8_000;
 const ALARM_SOUND     = require("./assets/alarm_siren.mp3");
+const SOS_PHONE_NUMBER = "96171195281";
+const SOS_FIXED_LOCATION = {
+  label: "LIU University, Daher El Ein, Tripoli",
+  latitude: 34.39666297302929,
+  longitude: 35.840089975731324,
+};
 
 const cleanEsp32Ip = (value) => String(value ?? "").trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
 const isValidEsp32Ip = (value) => /^(?:\d{1,3}\.){3}\d{1,3}$/.test(value)
@@ -50,6 +56,41 @@ const toNumber = (value, fallback = null) => {
     if (Number.isFinite(parsed)) return parsed;
   }
   return fallback;
+};
+
+const buildSosMessage = ({ alertType, probability }) => {
+  const mapsUrl = `https://maps.google.com/?q=${SOS_FIXED_LOCATION.latitude},${SOS_FIXED_LOCATION.longitude}`;
+  return [
+    "SOS FIRE ALERT",
+    `Location: ${SOS_FIXED_LOCATION.label}`,
+    `Map: ${mapsUrl}`,
+    "Emergency: Fire level exceeds the system's extinguishing capacity. we need help right now",
+  ].join("\n");
+};
+
+const getCallableSosNumber = () => (
+  SOS_PHONE_NUMBER.startsWith("+") ? SOS_PHONE_NUMBER : `+${SOS_PHONE_NUMBER}`
+);
+
+const openSosSms = async ({ alertType, probability }) => {
+  if (!SOS_PHONE_NUMBER) {
+    Alert.alert(
+      "SOS number missing",
+      "Add the emergency phone number in SOS_PHONE_NUMBER inside App.js."
+    );
+    return;
+  }
+
+  const message = buildSosMessage({ alertType, probability });
+
+  try {
+    const bodySeparator = Platform.OS === "ios" ? "&" : "?";
+    await Linking.openURL(
+      `sms:${getCallableSosNumber()}${bodySeparator}body=${encodeURIComponent(message)}`
+    );
+  } catch (error) {
+    Alert.alert("SOS failed", "Could not open the SMS app on this device.");
+  }
 };
 
 // Chooses the visual danger mode from the current fire and gas state.
@@ -1289,6 +1330,21 @@ function LiveScreen() {
           </Animated.View>
         )}
 
+        {fireDanger && (
+          <TouchableOpacity
+            style={styles.sosButton}
+            onPress={() => openSosSms({ alertType, probability })}
+            activeOpacity={0.82}
+          >
+            <Text style={styles.sosIcon}>☎</Text>
+            <View style={styles.sosCopy}>
+              <Text style={styles.sosTitle}>SOS SMS</Text>
+              <Text style={styles.sosSub}>Send fixed fire location</Text>
+            </View>
+            <Text style={styles.sosArrow}>›</Text>
+          </TouchableOpacity>
+        )}
+
         {/* ── Connect / Stop buttons ── */}
         <View style={styles.btnRow}>
           <TouchableOpacity
@@ -1830,6 +1886,19 @@ function SmartControlScreen({ hazardMode = "normal" }) {
         <Text style={styles.controlEyebrow}>SMART CONTROL</Text>
         <Text style={styles.controlTitle}>Device Control</Text>
       </View>
+
+      <TouchableOpacity
+        style={styles.sosButton}
+        onPress={() => openSosSms({ alertType: "MANUAL SOS", probability: null })}
+        activeOpacity={0.82}
+      >
+        <Text style={styles.sosIcon}>☎</Text>
+        <View style={styles.sosCopy}>
+          <Text style={styles.sosTitle}>SOS SMS</Text>
+          <Text style={styles.sosSub}>Send fixed fire location</Text>
+        </View>
+        <Text style={styles.sosArrow}>›</Text>
+      </TouchableOpacity>
 
       <Esp32IpSettingsCard />
 
@@ -2376,6 +2445,12 @@ const styles = StyleSheet.create({
   alarmStrip:      { minHeight: 50, borderRadius: 16, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between", shadowRadius: 18, elevation: 9 },
   alarmStripText:  { fontSize: 12, fontWeight: "900", letterSpacing: 1.2 },
   alarmWave:       { fontSize: 16, fontWeight: "900", letterSpacing: 1 },
+  sosButton:       { minHeight: 62, borderRadius: 16, borderWidth: 1, borderColor: C.fireBorder, backgroundColor: "rgba(255,52,52,0.18)", paddingHorizontal: 14, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 12, shadowColor: C.fire, shadowOpacity: 0.5, shadowRadius: 18, elevation: 9 },
+  sosIcon:         { width: 36, height: 36, borderRadius: 18, overflow: "hidden", textAlign: "center", textAlignVertical: "center", backgroundColor: C.fire, color: C.white, fontSize: 21, fontWeight: "900" },
+  sosCopy:         { flex: 1, gap: 2 },
+  sosTitle:        { color: C.white, fontSize: 15, fontWeight: "900", letterSpacing: 0.4 },
+  sosSub:          { color: C.grey, fontSize: 10, fontWeight: "700", letterSpacing: 0.3 },
+  sosArrow:        { color: C.fireHot, fontSize: 28, fontWeight: "700", lineHeight: 30 },
   controlScroll:   { padding: 16, paddingTop: Platform.OS === "ios" ? 58 : 48, paddingBottom: Platform.OS === "ios" ? 112 : 104, gap: 14 },
   controlHeader:   { gap: 6, marginBottom: 6 },
   controlEyebrow:  { color: C.sage, fontSize: 10, fontWeight: "800", letterSpacing: 1.6 },
